@@ -4,15 +4,11 @@ using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
+    private void Start()
     {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
+        Debug.Log("StartTime:" + Time.realtimeSinceStartup);
+        GameInitManager.Instance.InitMapData();
+        GameInitManager.Instance.CreateInitMapData();
+        Debug.Log("EndTime:" + Time.realtimeSinceStartup);
     }
 }
