@@ -1,11 +1,10 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class GameInitManager
 {
-    public readonly int[] EnableArrayNums = new int[9] { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
-
     public MapData[,] Map;
 
     public GameObject OneSdTarget;
@@ -17,6 +16,10 @@ public class GameInitManager
     private Dictionary<int, List<MapData>> columnMapDatas;
 
     private List<MapData> otherMapList;
+
+    private Dictionary<int, int> dataDict = new Dictionary<int, int>();
+
+    private int loopNum = 0;
 
     #region 单例
     private static GameInitManager _instance;
@@ -93,6 +96,10 @@ public class GameInitManager
 
     public void CreateInitMapData()
     {
+        loopNum = 0;
+
+        ClearDataMapBaseValue();
+
         CreateFreeMapData();
         otherMapList = new List<MapData>();
         foreach (var child in Map)
@@ -133,14 +140,20 @@ public class GameInitManager
         }
     }
 
-    private void CreateOtherMapData(List<MapData> mapDataList, int Index = 0)
+    public void CreateOtherMapData(List<MapData> mapDataList, int Index = 0)
     {
+        loopNum++;
+
+        if (loopNum >= 200)
+        {
+            GameManager.Instance.DestroyUI();
+            GameManager.Instance.CreateMapData();
+            return;
+        }
+
         if (Index < mapDataList.Count)
         {
-            var rcList = GetIntersect(GetCouldSelectNum(mapDataList[Index], rowMapDatas[mapDataList[Index].rowIndex]), GetCouldSelectNum(mapDataList[Index], columnMapDatas[mapDataList[Index].columnIndex]));
-            var pList = GetCouldSelectNum(mapDataList[Index], mapDataList[Index].mapDataParent);
-
-            var enableList = GetIntersect(pList, rcList);
+            var enableList = GetEnableNumList(mapDataList[Index]);
 
             if (mapDataList[Index].initCouldSelectNums == null)
             {
@@ -149,7 +162,7 @@ public class GameInitManager
 
             if (mapDataList[Index].initCouldSelectNums.Count > 0)
             {
-                int randomIndex = Random.Range(0, mapDataList[Index].initCouldSelectNums.Count);
+                int randomIndex = UnityEngine.Random.Range(0, mapDataList[Index].initCouldSelectNums.Count);
                 var useNum = mapDataList[Index].initCouldSelectNums[randomIndex];
                 mapDataList[Index].initCouldSelectNums.Remove(useNum);
                 mapDataList[Index].baseValue = useNum;
@@ -166,21 +179,27 @@ public class GameInitManager
         {
             Debug.Log("Create End");
             DebugMap();
+            GameManager.Instance.CreateUI();
         }
     }
 
     private void CreateFreeOneMapData(MapData child)
     {
-        var rcList = GetIntersect(GetCouldSelectNum(child, rowMapDatas[child.rowIndex]), GetCouldSelectNum(child, columnMapDatas[child.columnIndex]));
-        var pList = GetCouldSelectNum(child, child.mapDataParent);
+        var enableList = GetEnableNumList(child);
 
-        var enableList = GetIntersect(pList, rcList);
-
-        int index = Random.Range(0, enableList.Count);
+        int index = UnityEngine.Random.Range(0, enableList.Count);
 
         var useNum = enableList[index];
 
         child.baseValue = useNum;
+    }
+
+    private void ClearDataMapBaseValue()
+    {
+        foreach (var child in Map)
+        {
+            child.baseValue = 0;
+        }
     }
 
     private void DebugMap()
@@ -195,10 +214,10 @@ public class GameInitManager
     {
         List<int> couldSelectNums = new List<int>();
 
-        Dictionary<int, int> dataDict = new Dictionary<int, int>();
-        for (int i = 0; i < EnableArrayNums.Length; i++)
+        dataDict.Clear();
+        for (int i = 0; i < GameConfig.EnableArrayNums.Length; i++)
         {
-            dataDict.Add(EnableArrayNums[i], 0);
+            dataDict.Add(GameConfig.EnableArrayNums[i], 0);
         }
 
         if (!isInit)
@@ -232,10 +251,10 @@ public class GameInitManager
     {
         List<int> couldSelectNums = new List<int>();
 
-        Dictionary<int, int> dataDict = new Dictionary<int, int>();
-        for (int i = 0; i < EnableArrayNums.Length; i++)
+        dataDict.Clear();
+        for (int i = 0; i < GameConfig.EnableArrayNums.Length; i++)
         {
-            dataDict.Add(EnableArrayNums[i], 0);
+            dataDict.Add(GameConfig.EnableArrayNums[i], 0);
         }
 
         if (!isInit)
@@ -268,7 +287,7 @@ public class GameInitManager
     private List<int> GetIntersect(List<int> A, List<int> B)
     {
         List<int> couldSelectNums = new List<int>();
-        Dictionary<int, int> dataDict = new Dictionary<int, int>();
+        dataDict.Clear();
 
         foreach (var child in A)
         {
@@ -295,6 +314,14 @@ public class GameInitManager
         }
 
         return couldSelectNums;
+    }
+
+    public List<int> GetEnableNumList(MapData child)
+    {
+        var rcList = GetIntersect(GetCouldSelectNum(child, rowMapDatas[child.rowIndex]), GetCouldSelectNum(child, columnMapDatas[child.columnIndex]));
+        var pList = GetCouldSelectNum(child, child.mapDataParent);
+
+        return GetIntersect(pList, rcList);
     }
 }
 
