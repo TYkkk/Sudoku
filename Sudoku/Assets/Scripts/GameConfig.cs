@@ -14,6 +14,8 @@ public class GameConfig
 
     public static readonly Color SelectColor = Color.green;
 
+    public static readonly Color PlayUseColor = new Color(0.89f, 0.85f, 1f);
+
     public static readonly int CreateLoopMax = 10;
 
     public static int GameLevel = 1;

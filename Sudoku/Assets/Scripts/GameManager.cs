@@ -107,6 +107,8 @@ public class GameManager : MonoBehaviour
             itemDatas[index].mapData.baseValue = 0;
             itemDatas[index].gameObject.AddComponent<Button>();
             itemDatas[index].gameObject.AddComponent<ItemButtonClick>().itemData = itemDatas[index];
+            itemDatas[index].itemBgImg.color = GameConfig.PlayUseColor;
+            itemDatas[index].SetInitColor(GameConfig.PlayUseColor);
             PlayerUseItemDatas.Add(itemDatas[index]);
             itemDatas.RemoveAt(index);
         }
